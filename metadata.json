@@ -1,0 +1,6 @@
+{
+  "name": "Cloudflare Deployer",
+  "description": "Cloudflare Pages & Workers one-click auto deployer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

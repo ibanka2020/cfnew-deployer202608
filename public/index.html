@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>iBanKa！云端部署器</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="top-bar">
+        <div class="brand-title">iBanKa！</div>
+        <div class="top-controls">
+          <div class="lang-switch-group">
+            <button id="langZh" class="lang-btn active">简体中文</button>
+            <button id="langEn" class="lang-btn">English</button>
+          </div>
+          <button id="aiSettingsBtn" class="secondary small">AI API 设置</button>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">Cloudflare 自动部署软件</p>
+          <h1 data-i18n="appTitle">iBanKa！云端部署器</h1>
+          <p class="summary" data-i18n="summary">填 API Token 或 邮箱+Global API Key，点一次自动完成 Pages/Worker 随机 UUID、随机 KV 和随机项目名；支持自定义域名绑定。</p>
+        </div>
+        <div class="status-card">
+          <span class="status-dot"></span>
+          <strong data-i18n="keySecurityTitle">Key 安全说明</strong>
+          <p data-i18n="keySecurityDesc">前端凭据不持久化存储，后端仅作 Cloudflare 官方 API 原样转发。</p>
+        </div>
+      </section>
+
+      <section id="loginPage" class="panel login-panel">
+        <div class="panel-head">
+          <div>
+            <h2 data-i18n="loginHead">1. 登录 Cloudflare</h2>
+            <p data-i18n="loginSub">支持 Cloudflare API Token（邮箱可留空）或 Global API Key（需邮箱）。</p>
+          </div>
+        </div>
+        <div class="grid two">
+          <label>
+            <span data-i18n="emailLabel">邮箱 (API Token 可留空)</span>
+            <input id="email" autocomplete="username" placeholder="you@example.com (API Token 可留空)" />
+          </label>
+          <label>
+            <span data-i18n="keyLabel">API Token / Global API Key</span>
+            <input id="key" type="password" autocomplete="current-password" placeholder="Cloudflare API Token 或 Global Key" />
+          </label>
+        </div>
+        <div class="quick-action">
+          <button id="loginButton" class="primary" data-i18n="loginBtn">登录并继续</button>
+          <div id="loginStatus" class="result" data-i18n="notLoggedIn">未登录</div>
+        </div>
+      </section>
+
+      <section id="deployPage" class="page-hidden">
+        <section class="panel quick-panel">
+          <div class="panel-head">
+            <div>
+              <h2 data-i18n="quickHead">2. 一键部署</h2>
+              <p data-i18n="quickSub">默认使用 Pages + 加密/混淆源。开启域名绑定后自动随机子域名。</p>
+            </div>
+            <button id="backToLogin" class="secondary" data-i18n="backLogin">返回登录</button>
+          </div>
+          <div class="grid two">
+            <label>
+              <span data-i18n="domainLabel">可选域名</span>
+              <select id="quickZone"></select>
+            </label>
+            <label>
+              <span data-i18n="previewLabel">随机子域名预览</span>
+              <input id="quickHostnamePreview" value="不绑定域名" disabled />
+            </label>
+            <label class="toggle span-two">
+              <input id="bindDomain" type="checkbox" />
+              <span data-i18n="bindDomainCheck">绑定随机子域名</span>
+            </label>
+          </div>
+          <div class="quick-action">
+            <button id="quickDeploy" class="primary" data-i18n="quickDeployBtn">一键部署</button>
+            <div id="result" class="result" data-i18n="waitDeploy">等待部署</div>
+          </div>
+        </section>
+
+        <details class="panel advanced-panel">
+          <summary data-i18n="advancedSummary">高级设置和更新现有项目</summary>
+          <div class="panel-head">
+            <div>
+              <h2 data-i18n="advancedHead">高级设置</h2>
+              <p data-i18n="advancedSub">自定义 Worker、明文源、现有项目或现有 KV 时使用。</p>
+            </div>
+            <div class="button-group">
+              <button id="loadAccounts" class="secondary" data-i18n="btnRefresh">刷新账户/域名</button>
+              <button id="loadResources" class="secondary" data-i18n="btnRead">读取现有项目</button>
+              <button id="newNames" class="secondary" data-i18n="btnRandom">随机名称</button>
+              <button id="newUuid" class="secondary" data-i18n="btnUuid">生成 UUID</button>
+            </div>
+          </div>
+          <div class="grid three">
+            <label>
+              <span data-i18n="lblAccount">Account</span>
+              <select id="accountId"></select>
+            </label>
+            <label>
+              <span data-i18n="lblZone">Zone</span>
+              <select id="zoneId"></select>
+            </label>
+            <label>
+              <span data-i18n="lblCustomDomain">自定义域名</span>
+              <input id="advancedHostname" placeholder="留空不绑定，填根域则随机子域名" />
+            </label>
+            <label>
+              <span data-i18n="lblAction">操作</span>
+              <select id="deployMode">
+                <option value="create" data-i18n="optCreate">随机新建</option>
+                <option value="update" data-i18n="optUpdate">更新现有</option>
+              </select>
+            </label>
+            <label class="span-two">
+              <span data-i18n="lblExistProj">现有项目</span>
+              <select id="existingProject"></select>
+            </label>
+            <label>
+              <span data-i18n="lblType">部署方式</span>
+              <select id="deployType">
+                <option value="pages">Pages</option>
+                <option value="worker">Worker</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="lblSource">部署源</span>
+              <select id="sourceMode">
+                <option value="encoded" data-i18n="optEncoded">加密 / 混淆</option>
+                <option value="plain" data-i18n="optPlain">明文</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="lblProjName">项目名称</span>
+              <input id="projectName" />
+            </label>
+            <label class="span-two">
+              <span>UUID</span>
+              <input id="uuid" />
+            </label>
+            <label>
+              <span data-i18n="lblKvTitle">KV 名称</span>
+              <input id="kvTitle" />
+            </label>
+            <label>
+              <span data-i18n="lblExistKv">现有 KV</span>
+              <select id="kvId"></select>
+            </label>
+            <p id="modeHint" class="form-note span-two" data-i18n="hintCreate">新建模式会配置随机 UUID、KV 和域名；更新模式只同步代码。</p>
+            <label class="toggle">
+              <input id="enableWorkersDev" type="checkbox" />
+              <span data-i18n="chkWorkersDev">Worker 模式启用 workers.dev</span>
+            </label>
+          </div>
+          <section class="action-row">
+            <button id="deploy" class="primary" data-i18n="btnAdvDeploy">高级部署</button>
+          </section>
+        </details>
+      </section>
+
+      <section class="panel logs-panel">
+        <div class="panel-head compact">
+          <h2 data-i18n="logsHead">日志</h2>
+          <button id="clearLogs" class="secondary small" data-i18n="clearLogs">清空</button>
+        </div>
+        <pre id="logs"></pre>
+      </section>
+    </main>
+
+    <!-- AI API Settings Modal -->
+    <div id="aiModal" class="modal-backdrop page-hidden">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 data-i18n="aiModalTitle">AI API 设置</h3>
+          <button id="closeAiModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body grid">
+          <label class="radio-label">
+            <input type="radio" name="aiProvider" value="default" id="aiProviderDefault" checked />
+            <strong data-i18n="aiDefaultText">默认模型（Gemini API 系统默认 KEY）</strong>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="aiProvider" value="custom" id="aiProviderCustom" />
+            <strong data-i18n="aiCustomText">自定义 OpenAI 兼容接口</strong>
+          </label>
+          <div id="customAiFields" class="grid page-hidden">
+            <label>
+              <span>Base URL</span>
+              <input id="aiBaseUrl" placeholder="https://api.openai.com/v1" />
+            </label>
+            <label>
+              <span>API Key</span>
+              <input id="aiApiKey" type="password" placeholder="sk-..." />
+            </label>
+            <label>
+              <span data-i18n="aiModelLabel">Model 名称</span>
+              <input id="aiModelName" placeholder="gpt-4o-mini / deepseek-chat" />
+            </label>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button id="openAiGuideBtn" class="secondary small" data-i18n="aiGuideBtn">免费 AI API 获取指南</button>
+          <button id="saveAiSettings" class="primary small" data-i18n="saveBtn">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Free AI API Guide Modal -->
+    <div id="aiGuideModal" class="modal-backdrop page-hidden">
+      <div class="modal-card wide">
+        <div class="modal-head">
+          <h3 data-i18n="guideModalTitle">免费 AI API 获取指南</h3>
+          <button id="closeGuideModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body guide-content">
+          <p data-i18n="guideIntro">以下是推荐的稳定免费/低成本 AI API 获取渠道与对比说明：</p>
+          <table class="guide-table">
+            <thead>
+              <tr>
+                <th data-i18n="thProvider">提供商</th>
+                <th data-i18n="thRateLimit">免费额度 / 限速</th>
+                <th data-i18n="thProsCons">优缺点</th>
+                <th data-i18n="thConfigEx">配置示例 (Base URL & Model)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Google Gemini API</strong></td>
+                <td>15 RPM 免费 (Google AI Studio)</td>
+                <td>速度快、推理强，支持多模态；部分地区需网络优化。</td>
+                <td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code><br>Model: <code>gemini-2.5-flash</code></td>
+              </tr>
+              <tr>
+                <td><strong>Groq API</strong></td>
+                <td>免费高限速 (30 RPM, 14.4k TPM)</td>
+                <td>极致生成速度，基于 Llama 3 / Mixtral 开源模型。</td>
+                <td><code>https://api.groq.com/openai/v1</code><br>Model: <code>llama-3.3-70b-versatile</code></td>
+              </tr>
+              <tr>
+                <td><strong>硅基流动 (SiliconFlow)</strong></td>
+                <td>注册赠送免费额度，多开源模型免费</td>
+                <td>国内直连极快，原生支持 DeepSeek V3/R1 与 Qwen 模型。</td>
+                <td><code>https://api.siliconflow.cn/v1</code><br>Model: <code>deepseek-ai/DeepSeek-V3</code></td>
+              </tr>
+              <tr>
+                <td><strong>DeepSeek 官方</strong></td>
+                <td>新用户送赠金，价格极其亲民</td>
+                <td>逻辑推理超强，性价比之王。</td>
+                <td><code>https://api.deepseek.com/v1</code><br>Model: <code>deepseek-chat</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-foot">
+          <button id="closeGuideBtn" class="primary small" data-i18n="closeBtn">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
